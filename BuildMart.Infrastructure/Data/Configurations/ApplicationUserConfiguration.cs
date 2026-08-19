@@ -1,0 +1,21 @@
+using BuildMart.Domain.Entities;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+
+namespace BuildMart.Infrastructure.Data.Configurations;
+
+public class ApplicationUserConfiguration : IEntityTypeConfiguration<ApplicationUser>
+{
+    public void Configure(EntityTypeBuilder<ApplicationUser> builder)
+    {
+        builder.Property(u => u.FullName)
+            .IsRequired()
+            .HasMaxLength(150);
+
+        builder.Property(u => u.Address)
+            .HasMaxLength(500);
+
+        builder.Property(u => u.City)
+            .HasMaxLength(100);
+    }
+}

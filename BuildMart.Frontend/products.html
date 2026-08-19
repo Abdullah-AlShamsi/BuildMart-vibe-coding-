@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>All Products — BuildMart</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="app-header"></div>
+
+<section class="block container">
+  <h1 style="margin-bottom:20px;">All Products</h1>
+  <div class="products-layout">
+    <aside class="filters-panel">
+      <h4>Category</h4>
+      <div class="group" id="filter-categories">Loading...</div>
+
+      <h4>Price Range</h4>
+      <div class="group price-range">
+        <input type="number" id="filter-min-price" placeholder="Min">
+        <input type="number" id="filter-max-price" placeholder="Max">
+      </div>
+
+      <h4>Brand</h4>
+      <div class="group">
+        <select id="filter-brand"><option value="">All brands</option></select>
+      </div>
+
+      <h4>Availability</h4>
+      <div class="group">
+        <label><input type="checkbox" id="filter-available"> In stock only</label>
+      </div>
+
+      <button class="btn btn-primary btn-block" onclick="applyFilters()">Apply Filters</button>
+      <button class="btn btn-outline btn-block" style="margin-top:8px;" onclick="clearFilters()">Clear</button>
+    </aside>
+
+    <div>
+      <div class="toolbar">
+        <span id="results-count" style="color:var(--color-text-muted); font-size:14px;"></span>
+        <select id="sort-select" onchange="onSortChange()">
+          <option value="newest">Newest</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+          <option value="name_asc">Name: A-Z</option>
+        </select>
+      </div>
+      <div id="products-grid" class="grid-products"><div class="spinner">Loading products...</div></div>
+      <div id="pagination" class="pagination"></div>
+    </div>
+  </div>
+</section>
+
+<div id="app-footer"></div>
+
+<script src="js/api.js"></script>
+<script src="js/common.js"></script>
+<script src="js/products.js"></script>
+</body>
+</html>
