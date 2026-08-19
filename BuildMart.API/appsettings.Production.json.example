@@ -1,0 +1,15 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Server=YOUR_HOST_DB_SERVER;Database=YOUR_DB_NAME;User Id=YOUR_DB_USER;Password=YOUR_DB_PASSWORD;TrustServerCertificate=True;MultipleActiveResultSets=true"
+  },
+  "JwtSettings": {
+    "SecretKey": "REPLACE-WITH-A-LONG-RANDOM-PRODUCTION-SECRET-AT-LEAST-32-CHARS"
+  },
+  "CorsSettings": {
+    "AllowedOrigins": [ "https://YOUR-GITHUB-USERNAME.github.io" ]
+  },
+  "SeedAdmin": {
+    "Email": "admin@buildmart.com",
+    "Password": "CHANGE-THIS-BEFORE-GOING-LIVE!"
+  }
+}

@@ -46,7 +46,7 @@ async function loadProduct() {
 
     container.innerHTML = `
       <div class="pd-layout">
-        <div class="pd-image">${productIcon(p.categoryName)}</div>
+        <div class="pd-image">${productImageHtml(p.imageUrl, p.categoryName)}</div>
         <div class="pd-info">
           <div class="pd-meta"><a href="products.html?category=${p.categoryId}">${escapeHtml(p.categoryName)}</a> · SKU: ${escapeHtml(p.sku)} ${p.brand ? '· Brand: ' + escapeHtml(p.brand) : ''}</div>
           <h1>${escapeHtml(p.name)}</h1>

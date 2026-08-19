@@ -1,0 +1,51 @@
+name: Build, publish and deploy BuildMart.API to MonsterASP.NET
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "BuildMart.API/**"
+      - "BuildMart.Application/**"
+      - "BuildMart.Domain/**"
+      - "BuildMart.Infrastructure/**"
+  workflow_dispatch:
+
+jobs:
+  build_and_deploy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Install dependencies
+        run: dotnet restore BuildMart.API/BuildMart.API.csproj
+
+      - name: Build
+        run: dotnet build BuildMart.API/BuildMart.API.csproj --configuration Release --no-restore
+
+      # appsettings.Production.json is never committed to the repo (see .gitignore).
+      # Instead its full content is stored as a GitHub secret and written to disk
+      # right before publish, so the real connection string / JWT secret / CORS
+      # origins never touch source control.
+      - name: Write appsettings.Production.json from secret
+        shell: pwsh
+        env:
+          APPSETTINGS_JSON: ${{ secrets.APPSETTINGS_PRODUCTION_JSON }}
+        run: |
+          Set-Content -Path "BuildMart.API/appsettings.Production.json" -Value $env:APPSETTINGS_JSON
+
+      - name: Publish
+        run: dotnet publish BuildMart.API/BuildMart.API.csproj --configuration Release --output ./publish --runtime win-x86 --self-contained false
+
+      - name: Deploy to MonsterASP.NET via WebDeploy
+        uses: rasmusbuchholdt/simply-web-deploy@2.1.0
+        with:
+          website-name: ${{ secrets.WEBSITE_NAME }}
+          server-computer-name: ${{ secrets.SERVER_COMPUTER_NAME }}
+          server-username: ${{ secrets.SERVER_USERNAME }}
+          server-password: ${{ secrets.SERVER_PASSWORD }}
+          source-path: '\publish\'

@@ -21,7 +21,7 @@ function productCardHtml(p) {
       <div class="product-thumb">
         ${hasDiscount ? `<span class="badge-discount">-${Math.round((1 - p.discountPrice / p.price) * 100)}%</span>` : ''}
         ${outOfStock ? `<span class="badge-outofstock">Out of stock</span>` : ''}
-        ${productIcon(p.categoryName)}
+        ${productImageHtml(p.imageUrl, p.categoryName)}
       </div>
       <div class="product-info">
         <div class="brand">${escapeHtml(p.brand || p.categoryName)}</div>

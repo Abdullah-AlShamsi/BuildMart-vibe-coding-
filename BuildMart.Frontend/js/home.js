@@ -7,7 +7,7 @@ function productCardHtml(p) {
       <div class="product-thumb">
         ${hasDiscount ? `<span class="badge-discount">-${Math.round((1 - p.discountPrice / p.price) * 100)}%</span>` : ''}
         ${!p.isAvailable || p.stockQuantity === 0 ? `<span class="badge-outofstock">Out of stock</span>` : ''}
-        ${productIcon(p.categoryName)}
+        ${productImageHtml(p.imageUrl, p.categoryName)}
       </div>
       <div class="product-info">
         <div class="brand">${escapeHtml(p.brand || p.categoryName)}</div>
@@ -26,7 +26,7 @@ async function loadCategories() {
     const categories = await Api.getCategories();
     grid.innerHTML = categories.map(c => `
       <a href="products.html?category=${c.id}" class="category-card">
-        <div class="icon">${productIcon(c.name)}</div>
+        <div class="icon" style="width:48px;height:48px;margin:0 auto 10px;border-radius:6px;overflow:hidden;">${productImageHtml(c.imageUrl, c.name)}</div>
         <div class="name">${escapeHtml(c.name)}</div>
       </a>`).join('');
   } catch (e) {

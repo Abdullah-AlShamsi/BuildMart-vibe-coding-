@@ -47,7 +47,7 @@ async function loadCart() {
 
     const itemsHtml = cart.items.map(i => `
       <div class="cart-item">
-        <div class="thumb">${productIcon('')}</div>
+        <div class="thumb">${productImageHtml(i.productImageUrl, '')}</div>
         <div>
           <div class="name">${escapeHtml(i.productName)}</div>
           <div class="unit-price">${money(i.unitPrice)} / unit</div>

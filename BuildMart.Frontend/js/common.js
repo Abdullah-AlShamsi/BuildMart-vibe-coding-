@@ -98,7 +98,9 @@ function requireAuth(rolesAllowed) {
 }
 
 function money(amount) {
-  return `$${Number(amount).toFixed(2)}`;
+  // Omani Rial (OMR) is conventionally shown with 3 decimal places (baisa subunit),
+  // unlike most currencies which use 2.
+  return `${Number(amount).toFixed(3)} OMR`;
 }
 
 function escapeHtml(str) {
@@ -114,4 +116,17 @@ function productIcon(categoryName) {
     'Plumbing Tools': '🔧', 'Hardware': '🔩'
   };
   return icons[categoryName] || '📦';
+}
+
+/**
+ * Renders a product's real photo (imageUrl) inside its container, falling
+ * back to the category emoji if the image is missing or fails to load
+ * (e.g. offline, or the source image was moved/removed).
+ */
+function productImageHtml(imageUrl, categoryName) {
+  if (!imageUrl) return productIcon(categoryName);
+  const fallback = productIcon(categoryName).replace(/'/g, "\\'");
+  return `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(categoryName || 'Product')}"
+    style="width:100%;height:100%;object-fit:cover;"
+    onerror="this.onerror=null; this.replaceWith(Object.assign(document.createElement('span'), {textContent: '${fallback}'}));">`;
 }

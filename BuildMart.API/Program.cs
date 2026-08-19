@@ -125,17 +125,22 @@ using (var scope = app.Services.CreateScope())
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
-if (app.Environment.IsDevelopment())
+// Swagger is enabled in every environment for now (including Production) to make
+// initial deployment testing easier. Once the app is stable, wrap this back in
+// `if (app.Environment.IsDevelopment())` to hide it from the public in production.
+app.UseSwagger();
+app.UseSwaggerUI(options =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(options =>
-    {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildMart API v1");
-        options.RoutePrefix = "swagger";
-    });
-}
+    options.SwaggerEndpoint("/swagger/v1/swagger.json", "BuildMart API v1");
+    options.RoutePrefix = "swagger";
+});
 
-app.UseHttpsRedirection();
+// Note: HTTPS redirection is handled by the IIS/reverse-proxy edge on
+// MonsterASP.NET (Force HTTPS Redirect is enabled there). Since IIS
+// terminates TLS and forwards requests to Kestrel as plain HTTP,
+// also calling UseHttpsRedirection() here would make the app think
+// every request is HTTP and try to redirect again, causing a conflict.
+// app.UseHttpsRedirection();
 
 app.UseCors("BuildMartFrontend");
 

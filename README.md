@@ -8,6 +8,10 @@ A full-stack e-commerce web application for selling construction tools and mater
 
 BuildMart lets customers browse, search and filter a catalog of construction tools and materials, manage a shopping cart, place orders and track their status. Admins get a full dashboard to manage products, categories, orders and customers. The backend follows **Clean Architecture** (Domain → Application → Infrastructure → API) and exposes a fully documented REST API via Swagger.
 
+**Currency:** all prices are in **Omani Rial (OMR)**, displayed with 3 decimal places (the standard OMR convention, since its subunit — the baisa — is 1/1000 of a rial rather than 1/100). This is handled entirely in the frontend's `money()` helper (`BuildMart.Frontend/js/common.js`); the database stores plain `decimal` values with no currency-specific logic.
+
+**Product images:** the seeded catalog links to real, freely-licensed photos from [Wikimedia Commons](https://commons.wikimedia.org) (one representative photo per category, shared across that category's products) instead of placeholder icons. Each `Product.ImageUrl` / `Category.ImageUrl` is a direct Commons `Special:FilePath` link, so no image files are stored in this repo. If you replace the catalog with your own products, simply point `ImageUrl` at any image URL you have the rights to use — the frontend (`productImageHtml()` in `common.js`) renders it directly and automatically falls back to a category emoji if a URL ever fails to load.
+
 ---
 
 ## 2. Technologies
@@ -287,6 +291,79 @@ Authorization: Bearer <admin-token>
 - **Validation**: FluentValidation validators run automatically via a global `ValidationFilter` action filter — no manual validation calls needed in controllers.
 - **Stock integrity**: stock is checked when adding to cart, re-validated at checkout, deducted transactionally when an order is created, and restored if an order is cancelled.
 - **Security**: passwords hashed via ASP.NET Core Identity, JWT-signed with HMAC-SHA256, role-based `[Authorize(Roles = "Admin")]` on every admin endpoint, CORS restricted to configured origins, no secrets committed to source (`.gitignore` excludes environment-specific `appsettings.*.json`).
+
+## 14. Publishing to GitHub & Free Hosting (MonsterASP.NET)
+
+### Step 1 — Push the code to GitHub
+
+```bash
+cd BuildMart
+git init
+git add .
+git commit -m "Initial commit: BuildMart e-commerce platform"
+git branch -M main
+git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO-NAME.git
+git push -u origin main
+```
+
+> `.gitignore` already excludes `bin/`, `obj/`, `appsettings.Development.json` and `appsettings.Production.json`, so no secrets or build artifacts get committed.
+
+**⚠️ Make sure a `Migrations` folder exists under `BuildMart.Infrastructure`** (from `Add-Migration InitialCreate`, section 6) and is committed — the live host applies it automatically on startup via `Database.MigrateAsync()`, but only if it's actually in the repo.
+
+---
+
+### Step 2 — Sign up and create your site on MonsterASP.NET
+
+1. Go to **[monsterasp.net](https://www.monsterasp.net/)** and sign up for the free **ASP.NET Core + MSSQL** plan.
+2. From the [Hosting Control Panel](https://admin.monsterasp.net/), create a new **Website** (choose the ASP.NET Core template) and a new **MSSQL Database** — copy the connection string it gives you, you'll need it in Step 4.
+3. **Activate WebDeploy** for your site in the Control Panel, and note down the four values it shows you:
+   - `WEBSITE_NAME` (e.g. `site1234`)
+   - `SERVER_COMPUTER_NAME` (e.g. `https://site1234.siteasp.net:8172`)
+   - `SERVER_USERNAME`
+   - `SERVER_PASSWORD`
+
+---
+
+### Step 3 — Add GitHub Actions secrets
+
+This repo already includes `.github/workflows/deploy-backend-monsterasp.yml`, which builds, publishes and deploys `BuildMart.API` automatically on every push to `main` — adapted from [MonsterASP.NET's official GitHub Actions guide](https://help.monsterasp.net/books/github/page/how-to-deploy-website-via-github-actions) for this repo's multi-project solution layout.
+
+On GitHub: **Settings → Secrets and variables → Actions → New repository secret**, and add these five secrets:
+
+| Secret name | Value |
+|---|---|
+| `WEBSITE_NAME` | from Step 2.3 |
+| `SERVER_COMPUTER_NAME` | from Step 2.3 |
+| `SERVER_USERNAME` | from Step 2.3 |
+| `SERVER_PASSWORD` | from Step 2.3 |
+| `APPSETTINGS_PRODUCTION_JSON` | see below |
+
+**For `APPSETTINGS_PRODUCTION_JSON`:** copy `BuildMart.API/appsettings.Production.json.example`, fill in real values (your MSSQL connection string from Step 2.2, a new random 32+ char `JwtSettings:SecretKey`, and your GitHub Pages URL from Step 4 under `CorsSettings:AllowedOrigins`), then paste the **entire file's content as one secret value**. The workflow writes it to `BuildMart.API/appsettings.Production.json` right before publishing — the real file is never committed to the repo.
+
+Push to `main` (or re-run the workflow manually from the **Actions** tab) to trigger a deploy. On first successful startup, the app creates all tables and seeds categories/products/admin automatically — check the workflow's logs or your host's runtime logs for the *"Seeded default admin account..."* message.
+
+---
+
+### Step 4 — Frontend: deploy to GitHub Pages (free, automatic)
+
+This repo also includes `.github/workflows/deploy-pages.yml`, which publishes `BuildMart.Frontend` to GitHub Pages on every push to `main`.
+
+1. On GitHub: **Settings → Pages → Build and deployment → Source → GitHub Actions**.
+2. Before pushing, update `BuildMart.Frontend/js/api.js`:
+   ```js
+   const API_BASE_URL = 'https://YOUR-SITE.siteasp.net/api'; // your live backend URL from Step 2
+   ```
+3. Push to `main` — it publishes to `https://YOUR-USERNAME.github.io/YOUR-REPO-NAME/`.
+4. Update the `APPSETTINGS_PRODUCTION_JSON` secret's `CorsSettings:AllowedOrigins` to that exact Pages URL, then re-run the backend workflow — otherwise the browser blocks API requests with a CORS error.
+
+### Verifying the live deployment
+
+- Open the GitHub Pages URL → Home page should load categories/products from the live API.
+- Open `https://YOUR-SITE.siteasp.net/swagger` → confirm it loads and `/api/products` returns data.
+- Register a test account and place a test order end-to-end.
+- Log in as `admin@buildmart.com` (whatever password you set in `APPSETTINGS_PRODUCTION_JSON`) and confirm the Admin dashboard loads.
+
+---
 
 ### Troubleshooting
 
