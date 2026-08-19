@@ -2,7 +2,7 @@
  * BuildMart frontend — API client.
  * Change BASE_URL if your API runs on a different port.
  */
-const API_BASE_URL = 'https://localhost:7099/api';
+const API_BASE_URL = 'https://buildmart.runasp.net/api';
 
 const Auth = {
   getToken() { return localStorage.getItem('buildmart_token'); },
